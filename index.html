@@ -328,23 +328,22 @@
     </div>
     <div class="settings-body">
       <div class="setting-row">
-        <label>句点までの文字数</label>
+        <label>累積文字数のしきい値</label>
         <input type="number" id="threshold" value="10" min="1" max="200">
         <span class="setting-tag tag-short">以下 → 空行なし</span>
-        <span class="setting-tag tag-long">超える → 空行あり</span>
+        <span class="setting-tag tag-long">超えたら → 空行あり</span>
       </div>
       <div id="rulePreview" class="rule-preview">
-        <span>「。」まで <strong>10文字以下</strong></span>
+        <span>累積 <strong>10文字以下</strong>で改行</span>
         <span class="arrow">→</span>
-        <span>改行のみ</span>
+        <span>空行なし</span>
         <span style="margin:0 4px;color:#ddd">／</span>
-        <span><strong>11文字以上</strong></span>
+        <span>累積 <strong>11文字以上</strong>で改行</span>
         <span class="arrow">→</span>
-        <span>空行を追加</span>
+        <span>空行を追加しリセット</span>
       </div>
       <div class="setting-hint">
-        スマホ画面で1〜2行に収まる短い文には空行不要、長い文の後には空行を入れて読みやすくします。<br>
-        数値を変えると上のルール表示が更新されます。
+        改行するたびに文字数を累積カウント。しきい値を超えた改行の後に空行を追加してカウントをリセットします。半角・全角どちらも1文字。
       </div>
     </div>
   </div>
@@ -422,11 +421,11 @@
   function updateRulePreview() {
     const t = parseInt($threshold.value) || 10;
     $preview.innerHTML =
-      `<span>「。」まで <strong>${t}文字以下</strong></span>` +
-      `<span class="arrow">→</span><span>改行のみ</span>` +
+      `<span>累積 <strong>${t}文字以下</strong>で改行</span>` +
+      `<span class="arrow">→</span><span>空行なし</span>` +
       `<span style="margin:0 4px;color:#ddd">／</span>` +
-      `<span><strong>${t + 1}文字以上</strong></span>` +
-      `<span class="arrow">→</span><span>空行を追加</span>`;
+      `<span>累積 <strong>${t + 1}文字以上</strong>で改行</span>` +
+      `<span class="arrow">→</span><span>空行を追加しリセット</span>`;
   }
 
   // ── Core format logic ─────────────────────────
@@ -441,37 +440,37 @@
   }
 
   function doFormat(text, threshold) {
-    // 句点(。！？)で文を区切り、長短に応じて空行を制御する
-    const SENTENCE_END = /[。！？]/;
+    // 改行ごとに累積文字数をカウント
+    // しきい値を超えた改行の後に空行を追加してカウントをリセット
+    // 半角・全角どちらも1文字（.lengthで統一）
+    const lines = text.split('\n');
     const out = [];
-    let buf = '';
+    let cumulative = 0;
 
-    for (let i = 0; i < text.length; i++) {
-      const ch = text[i];
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const isBlank = line.trim() === '';
 
-      if (ch === '\n') {
-        // 元々の改行：バッファに残っている文字があれば出力
-        if (buf.trim()) { out.push(buf.trimEnd()); buf = ''; }
-        // 連続する改行はひとつにまとめる
-        if (out.length && out[out.length - 1] !== '') out.push('');
+      if (isBlank) {
+        // 元から空行はそのまま出力してカウントリセット
+        out.push('');
+        cumulative = 0;
         continue;
       }
 
-      buf += ch;
+      cumulative += line.length;
+      out.push(line);
 
-      if (SENTENCE_END.test(ch)) {
-        // 句点で区切る
-        const len = buf.trim().length;   // 句点含む文字数
-        out.push(buf.trimEnd());
-        if (len > threshold) out.push(''); // 空行追加
-        buf = '';
+      // 最終行でなければ改行判定
+      if (i < lines.length - 1) {
+        if (cumulative > threshold) {
+          out.push('');   // 空行追加
+          cumulative = 0; // リセット
+        }
       }
     }
 
-    // 末尾の残り
-    if (buf.trim()) out.push(buf.trimEnd());
-
-    // 先頭・末尾の空行を除去、連続空行を1つに
+    // 連続空行を1つに、前後の空行を除去
     const clean = out
       .join('\n')
       .replace(/\n{3,}/g, '\n\n')
