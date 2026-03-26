@@ -1,0 +1,21 @@
+{
+  "name": "note 読みやすく整形",
+  "short_name": "note整形",
+  "description": "スマホで読みやすいnote記事に整形するツール",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f5f5f2",
+  "theme_color": "#41c9b4",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>note 読みやすく整形</title>
+
+  <!-- PWA -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="note整形">
+  <meta name="theme-color" content="#41c9b4">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --green:       #41c9b4;
+      --green-dark:  #2da898;
+      --green-pale:  #e8f8f6;
+      --bg:          #f5f5f2;
+      --surface:     #ffffff;
+      --border:      #e2e2de;
+      --text:        #1c1c1a;
+      --text-muted:  #8a8a85;
+      --radius:      12px;
+      --shadow:      0 2px 10px rgba(0,0,0,.07);
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Noto Sans JP', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+
+    /* ── Header ─────────────────────────────── */
+    header {
+      background: var(--green);
+      color: #fff;
+      padding: 14px 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 2px 8px rgba(65,201,180,.35);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header .logo {
+      width: 30px; height: 30px;
+      background: rgba(255,255,255,.22);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px; font-weight: 900;
+      font-family: 'Noto Serif JP', serif;
+      letter-spacing: -.03em;
+    }
+    header h1 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: .03em;
+    }
+    header .subtitle {
+      margin-left: auto;
+      font-size: 11px;
+      opacity: .75;
+      font-weight: 300;
+    }
+
+    /* ── Container ───────────────────────────── */
+    .wrap {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 18px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ── Card ────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .card-header {
+      padding: 9px 14px;
+      background: #fafaf8;
+      border-bottom: 1px solid var(--border);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card-header .label-jp {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: .01em;
+      text-transform: none;
+    }
+
+    /* ── Textarea ────────────────────────────── */
+    textarea {
+      width: 100%;
+      border: none;
+      outline: none;
+      resize: vertical;
+      font-family: 'Noto Sans JP', sans-serif;
+      font-size: 14px;
+      line-height: 1.9;
+      padding: 14px;
+      color: var(--text);
+      background: transparent;
+      min-height: 170px;
+    }
+    textarea::placeholder { color: #bbb; }
+
+    /* ── Settings ────────────────────────────── */
+    .settings-body {
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .setting-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+    }
+    .setting-row label {
+      font-size: 13px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .setting-row input[type=number] {
+      width: 66px;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      padding: 5px 8px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      outline: none;
+      text-align: center;
+      transition: border-color .15s;
+    }
+    .setting-row input[type=number]:focus { border-color: var(--green); }
+    .setting-tag {
+      font-size: 12px;
+      padding: 3px 9px;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    .tag-short {
+      background: var(--green-pale);
+      color: var(--green-dark);
+    }
+    .tag-long {
+      background: #fff3e0;
+      color: #d06000;
+    }
+    .setting-hint {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      line-height: 1.6;
+      padding: 8px 10px;
+      background: #fafaf8;
+      border-radius: 7px;
+      border-left: 3px solid var(--border);
+    }
+
+    /* ── Buttons ─────────────────────────────── */
+    .btn {
+      border: none;
+      border-radius: 9px;
+      padding: 11px 18px;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .15s, transform .1s, opacity .15s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+    .btn:active { transform: scale(0.96); }
+
+    .btn-primary {
+      background: var(--green);
+      color: #fff;
+      width: 100%;
+      font-size: 15px;
+      padding: 13px;
+      letter-spacing: .03em;
+      box-shadow: 0 3px 12px rgba(65,201,180,.4);
+    }
+    .btn-primary:hover { background: var(--green-dark); }
+
+    .btn-icon {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1.5px solid var(--border);
+      padding: 7px 13px;
+      font-size: 13px;
+      border-radius: 8px;
+    }
+    .btn-icon:hover { background: #f0f0ed; color: var(--text); }
+    .btn-icon:disabled { opacity: .3; cursor: default; transform: none; }
+
+    .btn-copy {
+      background: var(--green-pale);
+      color: var(--green-dark);
+      border: 1.5px solid #b8e8e2;
+      font-size: 13px;
+      padding: 7px 14px;
+      border-radius: 8px;
+    }
+    .btn-copy:hover { background: #d2f0ec; }
+
+    /* ── Output toolbar ──────────────────────── */
+    .output-tools {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* ── Empty state ─────────────────────────── */
+    .empty-state {
+      padding: 44px 20px;
+      text-align: center;
+      color: #c0c0bc;
+    }
+    .empty-state .es-icon {
+      font-size: 36px;
+      margin-bottom: 10px;
+      opacity: .6;
+    }
+    .empty-state p {
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    /* ── Char count ──────────────────────────── */
+    .char-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    /* ── Toast ───────────────────────────────── */
+    #toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%) translateY(70px);
+      background: #1c1c1a;
+      color: #fff;
+      padding: 10px 22px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 500;
+      z-index: 500;
+      transition: transform .25s cubic-bezier(.34,1.56,.64,1);
+      pointer-events: none;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(0,0,0,.2);
+    }
+    #toast.show { transform: translateX(-50%) translateY(0); }
+
+    /* ── Rule preview ────────────────────────── */
+    .rule-preview {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .rule-preview .arrow { color: var(--green); font-weight: 700; }
+
+    @media (max-width: 480px) {
+      .wrap { padding: 12px 10px; gap: 12px; }
+      textarea { font-size: 15px; }
+      .card-header .label-jp { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">#</div>
+  <h1>note 読みやすく整形</h1>
+  <span class="subtitle">by 泰祥屋note店</span>
+</header>
+
+<div class="wrap">
+
+  <!-- ① 入力 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="label-jp">① 元のテキスト</span>
+      <span class="char-count" id="inputCount">0 文字</span>
+    </div>
+    <textarea id="inputText" placeholder="ここに記事テキストを貼り付けてください..."></textarea>
+  </div>
+
+  <!-- ⚙ 設定 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="label-jp">⚙ 整形設定</span>
+    </div>
+    <div class="settings-body">
+      <div class="setting-row">
+        <label>句点までの文字数</label>
+        <input type="number" id="threshold" value="10" min="1" max="200">
+        <span class="setting-tag tag-short">以下 → 空行なし</span>
+        <span class="setting-tag tag-long">超える → 空行あり</span>
+      </div>
+      <div id="rulePreview" class="rule-preview">
+        <span>「。」まで <strong>10文字以下</strong></span>
+        <span class="arrow">→</span>
+        <span>改行のみ</span>
+        <span style="margin:0 4px;color:#ddd">／</span>
+        <span><strong>11文字以上</strong></span>
+        <span class="arrow">→</span>
+        <span>空行を追加</span>
+      </div>
+      <div class="setting-hint">
+        スマホ画面で1〜2行に収まる短い文には空行不要、長い文の後には空行を入れて読みやすくします。<br>
+        数値を変えると上のルール表示が更新されます。
+      </div>
+    </div>
+  </div>
+
+  <!-- ボタン -->
+  <button class="btn btn-primary" onclick="formatText()">✨ 読みやすく整形する</button>
+
+  <!-- ② 出力 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="label-jp">② 整形後テキスト</span>
+      <div class="output-tools">
+        <button class="btn btn-icon" id="undoBtn" onclick="doUndo()" disabled>↩ 戻る</button>
+        <button class="btn btn-icon" id="redoBtn" onclick="doRedo()" disabled>↪ 進む</button>
+        <button class="btn btn-copy" onclick="copyAll()">📋 全コピー</button>
+      </div>
+    </div>
+    <div id="emptyState" class="empty-state">
+      <div class="es-icon">✦</div>
+      <p>整形後のテキストがここに表示されます。<br>直接編集もできます。</p>
+    </div>
+    <textarea id="outputText" style="display:none; min-height:300px;"></textarea>
+  </div>
+
+</div>
+
+<div id="toast"></div>
+
+<script>
+  const $input     = document.getElementById('inputText');
+  const $output    = document.getElementById('outputText');
+  const $undoBtn   = document.getElementById('undoBtn');
+  const $redoBtn   = document.getElementById('redoBtn');
+  const $empty     = document.getElementById('emptyState');
+  const $inputCnt  = document.getElementById('inputCount');
+  const $threshold = document.getElementById('threshold');
+  const $preview   = document.getElementById('rulePreview');
+
+  // ── Undo / Redo ───────────────────────────────
+  let hist = [], histIdx = -1;
+
+  function saveHistory(text) {
+    hist = hist.slice(0, histIdx + 1);
+    hist.push(text);
+    histIdx = hist.length - 1;
+    refreshUndoRedo();
+  }
+
+  function doUndo() {
+    if (histIdx > 0) { histIdx--; applyHistory(); }
+  }
+  function doRedo() {
+    if (histIdx < hist.length - 1) { histIdx++; applyHistory(); }
+  }
+  function applyHistory() {
+    showOutput(hist[histIdx]);
+    refreshUndoRedo();
+  }
+  function refreshUndoRedo() {
+    $undoBtn.disabled = histIdx <= 0;
+    $redoBtn.disabled = histIdx >= hist.length - 1;
+  }
+
+  // ── Events ────────────────────────────────────
+  $input.addEventListener('input', () => {
+    $inputCnt.textContent = $input.value.length + ' 文字';
+  });
+
+  $output.addEventListener('input', () => {
+    saveHistory($output.value);
+  });
+
+  $threshold.addEventListener('input', updateRulePreview);
+
+  function updateRulePreview() {
+    const t = parseInt($threshold.value) || 10;
+    $preview.innerHTML =
+      `<span>「。」まで <strong>${t}文字以下</strong></span>` +
+      `<span class="arrow">→</span><span>改行のみ</span>` +
+      `<span style="margin:0 4px;color:#ddd">／</span>` +
+      `<span><strong>${t + 1}文字以上</strong></span>` +
+      `<span class="arrow">→</span><span>空行を追加</span>`;
+  }
+
+  // ── Core format logic ─────────────────────────
+  function formatText() {
+    const raw = $input.value;
+    if (!raw.trim()) { showToast('テキストを貼り付けてください'); return; }
+    const t = parseInt($threshold.value) || 10;
+    const result = doFormat(raw, t);
+    showOutput(result);
+    saveHistory(result);
+    showToast('整形完了！');
+  }
+
+  function doFormat(text, threshold) {
+    // 句点(。！？)で文を区切り、長短に応じて空行を制御する
+    const SENTENCE_END = /[。！？]/;
+    const out = [];
+    let buf = '';
+
+    for (let i = 0; i < text.length; i++) {
+      const ch = text[i];
+
+      if (ch === '\n') {
+        // 元々の改行：バッファに残っている文字があれば出力
+        if (buf.trim()) { out.push(buf.trimEnd()); buf = ''; }
+        // 連続する改行はひとつにまとめる
+        if (out.length && out[out.length - 1] !== '') out.push('');
+        continue;
+      }
+
+      buf += ch;
+
+      if (SENTENCE_END.test(ch)) {
+        // 句点で区切る
+        const len = buf.trim().length;   // 句点含む文字数
+        out.push(buf.trimEnd());
+        if (len > threshold) out.push(''); // 空行追加
+        buf = '';
+      }
+    }
+
+    // 末尾の残り
+    if (buf.trim()) out.push(buf.trimEnd());
+
+    // 先頭・末尾の空行を除去、連続空行を1つに
+    const clean = out
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+
+    return clean;
+  }
+
+  // ── UI helpers ────────────────────────────────
+  function showOutput(text) {
+    $empty.style.display   = 'none';
+    $output.style.display  = 'block';
+    $output.value          = text;
+  }
+
+  function copyAll() {
+    if (!$output.value) { showToast('コピーするテキストがありません'); return; }
+    navigator.clipboard.writeText($output.value)
+      .then(() => showToast('コピーしました！'))
+      .catch(() => {
+        $output.select();
+        document.execCommand('copy');
+        showToast('コピーしました！');
+      });
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    el.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2000);
+  }
+
+  // init
+  updateRulePreview();
+</script>
+</body>
+</html>
