@@ -146,7 +146,6 @@
   <div class="card">
     <div class="card-header">
       <span>① 元のテキスト</span>
-      <span id="inputCount" style="font-size:13px;font-weight:400;color:#1a1a1a;">0 文字</span>
     </div>
     <textarea id="inputText" rows="7" placeholder="ここに記事テキストを貼り付けてください..."></textarea>
     <div class="resize-bar" id="rb1">
@@ -219,7 +218,6 @@
   var $undoBtn   = document.getElementById('undoBtn');
   var $redoBtn   = document.getElementById('redoBtn');
   var $empty     = document.getElementById('emptyState');
-  var $inputCnt  = document.getElementById('inputCount');
   var $threshold = document.getElementById('threshold');
   var $rb2       = document.getElementById('rb2');
 
@@ -262,9 +260,6 @@
     $redoBtn.disabled = histIdx >= hist.length - 1;
   }
 
-  $input.addEventListener('input', function() {
-    $inputCnt.textContent = $input.value.length + ' 文字';
-  });
   $output.addEventListener('input', function() { saveHistory($output.value); outputEdited = true; });
 
   var outputEdited = false;
