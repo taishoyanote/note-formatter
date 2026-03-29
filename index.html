@@ -157,11 +157,15 @@
 
   <div class="card">
     <div class="card-header">⚙ 整形設定</div>
-    <div class="setting-row">
-      <span>累積文字数のしきい値</span>
-      <input type="number" id="threshold" value="30" min="1" max="200">
-      <span class="tag-short">以下 → 空行なし</span>
-      <span class="tag-long">超えたら → 空行あり</span>
+    <div style="padding:10px 14px; display:flex; flex-direction:column; gap:10px;">
+      <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#1a1a1a;">
+        <span>累積文字数のしきい値</span>
+        <input type="number" id="threshold" value="30" min="1" max="200" style="width:52px; border:1.5px solid #d8d2ca; border-radius:6px; padding:4px 6px; font-size:13px; font-weight:600; text-align:center; color:#1a1a1a; background:#fff; outline:none;">
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span class="tag-short">以下 → 空行なし</span>
+        <span class="tag-long">超えたら → 空行あり</span>
+      </div>
     </div>
   </div>
 
@@ -231,11 +235,15 @@
     });
     bar.addEventListener('touchstart', function(e) {
       startY = e.touches[0].clientY; startH = ta.offsetHeight;
-      function onMove(e) { ta.style.height = Math.max(80, startH + e.touches[0].clientY - startY) + 'px'; }
+      e.preventDefault();
+      function onMove(e) {
+        e.preventDefault();
+        ta.style.height = Math.max(80, startH + e.touches[0].clientY - startY) + 'px';
+      }
       function onEnd() { document.removeEventListener('touchmove', onMove); document.removeEventListener('touchend', onEnd); }
-      document.addEventListener('touchmove', onMove, {passive: true});
+      document.addEventListener('touchmove', onMove, {passive: false});
       document.addEventListener('touchend', onEnd);
-    });
+    }, {passive: false});
   }
   makeResizable(document.getElementById('rb1'), $input);
   makeResizable($rb2, $output);
