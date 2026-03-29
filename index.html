@@ -165,7 +165,25 @@
     </div>
   </div>
 
-  <button class="btn-primary" onclick="formatText()">✨ 読みやすく整形する</button>
+  <button class="btn-primary" onclick="confirmFormat()">✨ 読みやすく整形する</button>
+
+  <!-- オーバーレイ -->
+  <div id="overlay" onclick="hideModal()" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:100;"></div>
+
+  <!-- モーダル小窓 -->
+  <div id="confirmModal" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%); width:60%; max-width:400px; min-width:260px; background:#fff; border-radius:10px; border:1px solid #e8e4de; box-shadow:0 4px 24px rgba(0,0,0,0.15); z-index:101; overflow:hidden;">
+    <div style="background:#fff8ee; padding:11px 16px; border-bottom:1px solid #f5dfa0; display:flex; align-items:center; gap:8px;">
+      <span style="font-size:14px;">⚠️</span>
+      <span style="font-size:13px; font-weight:600; color:#a05800;">上書き確認</span>
+    </div>
+    <div style="padding:16px;">
+      <p style="font-size:13px; color:#1a1a1a; line-height:1.8; margin-bottom:16px;">② 整形後テキストに編集した内容があります。読みやすく整形すると上書きされます。よろしいですか？</p>
+      <div style="display:flex; gap:10px; justify-content:flex-end;">
+        <button onclick="hideModal()" style="background:#fff; color:#1a1a1a; border:1.5px solid #e8e4de; border-radius:6px; padding:8px 20px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans JP',sans-serif;">整形しない</button>
+        <button onclick="executeFormat()" style="background-color:#41c9b4; color:#fff; border:none; border-radius:6px; padding:8px 20px; font-size:13px; font-weight:600; cursor:pointer; font-family:'Noto Sans JP',sans-serif;">整形する</button>
+      </div>
+    </div>
+  </div>
 
   <div class="card">
     <div class="card-header">
@@ -240,15 +258,34 @@
   $input.addEventListener('input', function() {
     $inputCnt.textContent = $input.value.length + ' 文字';
   });
-  $output.addEventListener('input', function() { saveHistory($output.value); });
+  $output.addEventListener('input', function() { saveHistory($output.value); outputEdited = true; });
 
-  function formatText() {
+  var outputEdited = false;
+
+  function confirmFormat() {
     var raw = $input.value;
     if (!raw.trim()) { showToast('テキストを貼り付けてください'); return; }
+    if (outputEdited && $output.value.trim()) {
+      document.getElementById('overlay').style.display = 'block';
+      document.getElementById('confirmModal').style.display = 'block';
+    } else {
+      executeFormat();
+    }
+  }
+
+  function hideModal() {
+    document.getElementById('overlay').style.display = 'none';
+    document.getElementById('confirmModal').style.display = 'none';
+  }
+
+  function executeFormat() {
+    hideModal();
+    var raw = $input.value;
     var t = parseInt($threshold.value) || 30;
     var result = doFormat(raw, t);
     showOutput(result);
     saveHistory(result);
+    outputEdited = false;
     showToast('整形完了！');
   }
 
